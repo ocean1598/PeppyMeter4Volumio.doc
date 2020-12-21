@@ -1,0 +1,13 @@
+####
+# only change the 'device' in this section to "peppyalsa"
+audio_output {
+                type            "alsa"
+                name            "alsa"
+                device          "peppyalsa"
+                dop                     "${dop}"
+                ${mixer}
+                ${format}
+                ${special_settings}
+
+}
+####
