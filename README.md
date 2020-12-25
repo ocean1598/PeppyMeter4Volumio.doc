@@ -63,8 +63,18 @@ video.display = :0
 * Go to `/home/volumio/PeppyMeter` folder
 * `sudo openvt -s python3 peppymeter.py`
 
-## Resume back to Volumio UI
-* kill the peppymeter.py
-* `sudo chvt 2`
+### Resume back to Volumio UI
+The Volumio UI is on virtual terminal #2. The PeppyMeter UI is on #4, where #3 is used for PeppyMeter text output.
+Hence one can flip the display among them by using `chvt` command.
+There is no need to stop the PeppyMeter process.
+The only caveat is that switching back to PeppyMeter UI doesn't show the full meter, just the moving needle.
+It seems the background image got wiped out. Therefore, unless the meter redraws itself after something,
+the only way to get the full meter back is when "random" is choosen and the next meter shows up.
+* switch to Vulmio UI: `sudo chvt 2`
+* switch to PeppyMeter UI: `sudo chvt 4`
+* switch to PeppyMeter text output: `sudo chvt 3`
 
 __NOTE `fconsole` can report which console is currently active on the LCD display__
+
+## Tips
+* kill the meter: `sudo kill -9 $(ps aux | grep peppymeter | grep root | awk '{ print $2 }')`
