@@ -1,0 +1,92 @@
+diff --git a/config.txt b/config.txt
+index 5f32809..a344b0e 100644
+--- a/config.txt
++++ b/config.txt
+@@ -1,7 +1,7 @@
+ [current]
+ meter = random
+ random.meter.interval = 20
+-screen.size = medium
++screen.size = large
+ output.display = True
+ output.serial = False
+ output.i2c = False
+@@ -10,10 +10,10 @@ use.logging = False
+ frame.rate = 30
+ 
+ [sdl.env]
+-framebuffer.device = /dev/fb1
+-mouse.device = /dev/input/touchscreen
++framebuffer.device = /dev/fb0
++mouse.device = /dev/input/event0
+ mouse.driver = TSLIB
+-video.driver = dummy
++video.driver = directfb
+ video.display = :0
+ 
+ [serial.interface]
+@@ -38,7 +38,7 @@ update.period = 0.1
+ [data.source]
+ type = pipe
+ polling.interval = 0.033
+-pipe.name = /home/pi/myfifo
++pipe.name = /tmp/myfifo
+ volume.constant = 80.0
+ volume.min = 0.0
+ volume.max = 100.0
+diff --git a/datasource.py b/datasource.py
+index 29ec69a..6a03485 100644
+--- a/datasource.py
++++ b/datasource.py
+@@ -70,8 +70,7 @@ class DataSource(object):
+         self.double_rng.extend(range(int(self.max_in_ui) - 1, int(self.min), -1))
+         self.pipe = None
+         if self.ds_type == SOURCE_PIPE:
+-            thread = Thread(target=self.open_pipe)
+-            thread.start()
++            self.open_pipe()
+         self.previous_left = self.previous_right = self.previous_mono = 0.0
+         self.run_flag = True
+         self.polling_interval = self.config[POLLING_INTERVAL]
+diff --git a/peppymeter.py b/peppymeter.py
+index 173c894..eac77cb 100644
+--- a/peppymeter.py
++++ b/peppymeter.py
+@@ -139,7 +139,7 @@ class Peppymeter(ScreensaverMeter):
+             pygame.init()
+             pygame.display.set_caption("Peppy Meter")
+             
+-        self.util.PYGAME_SCREEN = pygame.display.set_mode((screen_w, screen_h), pygame.DOUBLEBUF, depth)        
++        self.util.PYGAME_SCREEN = pygame.display.set_mode((screen_w, screen_h))
+         self.util.meter_config[SCREEN_RECT] = pygame.Rect(0, 0, screen_w, screen_h) 
+     
+     def start_interface_outputs(self):
+@@ -219,7 +219,28 @@ class Peppymeter(ScreensaverMeter):
+         """
+         pass
+        
++def get_lock():
++    import socket
++    import sys
++
++    process_name = "PeppyMeter"
++    get_lock._lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
++
++    try:
++        # The null byte (\0) means the the socket is created
++        # in the abstract namespace instead of being created
++        # on the file system itself.
++        # Works only in Linux
++        get_lock._lock_socket.bind('\0' + process_name)
++        print("Acquired the running token")
++    except socket.error:
++        print("Can't acquire the running token")
++        sys.exit()
++
+ if __name__ == "__main__":
++    """ Make sure there is only one instnace running """
++    get_lock()
++
+     """ This is called by stand-alone PeppyMeter """
+     pm = Peppymeter(standalone=True)
+     if pm.util.meter_config[DATA_SOURCE][TYPE] != SOURCE_PIPE:
