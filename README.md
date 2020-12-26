@@ -63,7 +63,8 @@ video.display = :0
   * `self.util.PYGAME_SCREEN = pygame.display.set_mode((screen_w, screen_h))`
 #### Option 2: Patch method
 * `cd ~/PeppyMeter`
-* `patch -t  < ~/PeppyMeter4Volumio.doc/patch001.diff `
+* `patch -t  < ~/PeppyMeter4Volumio.doc/patch002.diff `
+  (If you check out the upstream, use `patch001.diff` instead.)
 ### Reboot
 Any method to reboot.
 ## Run the meters
